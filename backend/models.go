@@ -1,0 +1,27 @@
+package main
+
+import "time"
+
+type Status string
+
+const (
+	StatusTodo 	 Status = "A Fazer"
+	StatusInProgress Status = "Em Progresso"
+	StatusDone      Status = "Concluído"
+)
+
+type Task struct {
+	ID          int       `json:"id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Status	  Status    `json:"status"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
+type TaskRepository interface {
+	GetAllTasks() ([]Task, error)
+	GetTaskByID(id int) (*Task, error)
+	CreateTask(task *Task) error
+	UpdateTask(task *Task) error
+	DeleteTask(id int) error
+}
