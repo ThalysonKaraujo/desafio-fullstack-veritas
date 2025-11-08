@@ -2,14 +2,15 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	// "errors"
 	"sync"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	// "github.com/go-chi/chi/v5"
 )
 
 type InMemoryTaskRepository struct {
@@ -55,6 +56,16 @@ func (r *InMemoryTaskRepository) GetAllTasks() ([]Task, error) {
 	return allTasks, nil
 }
 
+func (r *InMemoryTaskRepository) GetTaskByID(id string) (*Task, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	task, exists := r.tasks[id]
+	if !exists {
+		return &Task{}, errors.New("Task not found")
+	}
+	return &task, nil
+}
+
 func (h *TaskHandler) HandlerCreateTask(w http.ResponseWriter, r *http.Request) {
 	var task Task
 	if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
@@ -83,6 +94,16 @@ func (h *TaskHandler) handleGetAllTasks(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	h.respondWithJSON(w, http.StatusOK, tasks)
+}
+
+func (h *TaskHandler) handleGetTaskByID(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+	task, err := h.repo.GetTaskByID(id)
+	if err != nil {
+		h.respondWithError(w, http.StatusNotFound, "Task not found")
+		return
+	}
+	h.respondWithJSON(w, http.StatusOK, task)
 }
 
 func (h *TaskHandler) respondWithError(w http.ResponseWriter, code int, message string) {

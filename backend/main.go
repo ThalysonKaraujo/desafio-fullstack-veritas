@@ -27,6 +27,9 @@ func main() {
 
 	r.Post("/tasks", TaskHandler.HandlerCreateTask)
 	r.Get("/tasks", TaskHandler.handleGetAllTasks)
+	r.Route("/tasks/{id}", func(r chi.Router) {
+		r.Get("/", TaskHandler.handleGetTaskByID)
+	})
 
 	log.Println("Server running on :8080")
 	if err := http.ListenAndServe(":8080", r); err != nil {

@@ -21,7 +21,7 @@ type Task struct {
 type TaskRepository interface {
 	CreateTask(task Task) (Task, error)
 	GetAllTasks() ([]Task, error)
-	// GetTaskByID(id int) (*Task, error)
+	GetTaskByID(id string) (*Task, error)
 	// UpdateTask(task *Task) error
-	// DeleteTask(id int) error
+	// DeleteTask(id string) error
 }
