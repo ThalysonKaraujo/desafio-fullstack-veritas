@@ -11,7 +11,7 @@ const (
 )
 
 type Task struct {
-	ID          int       `json:"id"`
+	ID          string       `json:"id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Status	  Status    `json:"status"`
@@ -19,9 +19,9 @@ type Task struct {
 }
 
 type TaskRepository interface {
-	GetAllTasks() ([]Task, error)
-	GetTaskByID(id int) (*Task, error)
-	CreateTask(task *Task) error
-	UpdateTask(task *Task) error
-	DeleteTask(id int) error
+	CreateTask(task Task) (Task, error)
+	// GetAllTasks() ([]Task, error)
+	// GetTaskByID(id int) (*Task, error)
+	// UpdateTask(task *Task) error
+	// DeleteTask(id int) error
 }
