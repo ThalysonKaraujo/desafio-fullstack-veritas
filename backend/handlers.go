@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strings"
 
@@ -12,7 +13,11 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+
+	"os"
 )
+
+const jsonStoreFile = "task.json"
 
 type InMemoryTaskRepository struct {
 	tasks map[string]Task 
@@ -28,13 +33,50 @@ func NewTaskHandler(repo TaskRepository) *TaskHandler {
 }
 
 func NewInMemoryTaskRepository() *InMemoryTaskRepository {
-	return &InMemoryTaskRepository{
+	repo := &InMemoryTaskRepository{
 		tasks: make(map[string]Task),
 	}
+
+	err := repo.loadFromJSON()
+	if err != nil && !os.IsNotExist(err) {
+		log.Fatalf("Could not load tasks from JSON: %s\n", err.Error())
+	}
+
+	return repo
+}
+
+func (r *InMemoryTaskRepository) loadFromJSON() error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	file, err := os.Open(jsonStoreFile)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&r.tasks); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *InMemoryTaskRepository) saveToJSON() error {
+
+	file, err := os.Create(jsonStoreFile)
+	if err != nil {
+		return err	
+	}
+	defer file.Close()
+	
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", " ")
+	return encoder.Encode(r.tasks)
 }
 
 
-func (r *InMemoryTaskRepository) CreateTask(task Task) (Task, error) { 
+func (r *InMemoryTaskRepository) CreateTask(task Task) (*Task, error) {
     r.mu.Lock()
     defer r.mu.Unlock()
     task.ID = uuid.New().String() 
@@ -43,8 +85,12 @@ func (r *InMemoryTaskRepository) CreateTask(task Task) (Task, error) {
         task.Status = StatusTodo
     }
     r.tasks[task.ID] = task
+
+	if err := r.saveToJSON(); err != nil {
+		log.Printf("Error saving in JSON")
+	}
     
-    return task, nil 
+    return &task, nil 
 }
 
 func (r *InMemoryTaskRepository) GetAllTasks() ([]Task, error) {
@@ -80,6 +126,10 @@ func (r *InMemoryTaskRepository) UpdateTask(id string, updatedTask Task) (*Task,
 	updatedTask.ID = id
 	updatedTask.CreatedAt = existingTask.CreatedAt
 	r.tasks[id] = updatedTask
+	if err := r.saveToJSON(); err != nil {
+		log.Printf("Error saving in JSON")
+	}
+
 	return &updatedTask, nil
 }
 
@@ -90,7 +140,12 @@ func (r *InMemoryTaskRepository) DeleteTask(id string) error {
 	if !exists {
 		return errors.New("task not found")
 	}
+
 	delete(r.tasks, id)
+
+	if err := r.saveToJSON(); err != nil {
+		log.Printf("Error saving in JSON")
+	}
 	return nil
 }
 

@@ -19,7 +19,7 @@ type Task struct {
 }
 
 type TaskRepository interface {
-	CreateTask(task Task) (Task, error)
+	CreateTask(task Task) (*Task, error)
 	GetAllTasks() ([]Task, error)
 	GetTaskByID(id string) (*Task, error)
 	UpdateTask(id string, task Task) (*Task, error)
