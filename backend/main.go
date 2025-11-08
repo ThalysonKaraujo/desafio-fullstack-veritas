@@ -29,6 +29,8 @@ func main() {
 	r.Get("/tasks", TaskHandler.handleGetAllTasks)
 	r.Route("/tasks/{id}", func(r chi.Router) {
 		r.Get("/", TaskHandler.handleGetTaskByID)
+		r.Put("/", TaskHandler.handleUpdateTask)
+		r.Delete("/", TaskHandler.handleDeleteTask)
 	})
 
 	log.Println("Server running on :8080")

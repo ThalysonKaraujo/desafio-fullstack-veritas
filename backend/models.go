@@ -22,6 +22,6 @@ type TaskRepository interface {
 	CreateTask(task Task) (Task, error)
 	GetAllTasks() ([]Task, error)
 	GetTaskByID(id string) (*Task, error)
-	// UpdateTask(task *Task) error
-	// DeleteTask(id string) error
+	UpdateTask(id string, task Task) (*Task, error)
+	DeleteTask(id string) error
 }
