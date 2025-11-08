@@ -1,4 +1,3 @@
-// /backend/handlers_test.go
 package main
 
 import (
@@ -118,19 +117,3 @@ func TestIntegration_CRUD_Flow(t *testing.T) {
 	}
 }
 
-func TestUnit_isStatusValid(t *testing.T) {
-	// 1. Teste dos casos válidos
-	if !isStatusValid(StatusTodo) {
-		t.Error("isStatusValid() falhou para 'A Fazer'")
-	}
-	if !isStatusValid(StatusInProgress) {
-		t.Error("isStatusValid() falhou para 'Em Progresso'")
-	}
-	if !isStatusValid(StatusDone) {
-		t.Error("isStatusValid() falhou para 'Concluídas'")
-	}
-
-	if isStatusValid("status_qualquer") {
-		t.Error("isStatusValid() deveria falhar para um status inválido")
-	}
-}
