@@ -83,6 +83,17 @@ func (r *InMemoryTaskRepository) UpdateTask(id string, updatedTask Task) (*Task,
 	return &updatedTask, nil
 }
 
+func (r *InMemoryTaskRepository) DeleteTask(id string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	_, exists := r.tasks[id]
+	if !exists {
+		return errors.New("task not found")
+	}
+	delete(r.tasks, id)
+	return nil
+}
+
 func (h *TaskHandler) HandlerCreateTask(w http.ResponseWriter, r *http.Request) {
 	var task Task
 	if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
@@ -130,6 +141,7 @@ func (h *TaskHandler) handleUpdateTask(w http.ResponseWriter, r *http.Request) {
 		h.respondWithError(w, http.StatusBadRequest, "invalid payload json")
 		return
 	}
+	
 
 	if taskToUpdate.Title == "" {
 		h.respondWithError(w, http.StatusBadRequest, "title is required")
@@ -154,6 +166,22 @@ func (h *TaskHandler) handleUpdateTask(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.respondWithJSON(w, http.StatusOK, updatedTask)
+}
+
+func (h *TaskHandler) handleDeleteTask(w http.ResponseWriter, r *http.Request) {
+	id := chi.URLParam(r, "id")
+
+	err := h.repo.DeleteTask(id)
+	if err != nil {
+		if err.Error() == "task not found" {
+			h.respondWithError(w, http.StatusNotFound, err.Error())
+		} else {
+			h.respondWithError(w, http.StatusInternalServerError, "failed to delete task")
+		}
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *TaskHandler) respondWithError(w http.ResponseWriter, code int, message string) {
