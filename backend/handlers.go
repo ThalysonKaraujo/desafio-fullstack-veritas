@@ -45,6 +45,16 @@ func (r *InMemoryTaskRepository) CreateTask(task Task) (Task, error) {
     return task, nil 
 }
 
+func (r *InMemoryTaskRepository) GetAllTasks() ([]Task, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	allTasks := make([]Task, 0, len(r.tasks))
+	for _, task := range r.tasks {
+		allTasks = append(allTasks, task)
+	}
+	return allTasks, nil
+}
+
 func (h *TaskHandler) HandlerCreateTask(w http.ResponseWriter, r *http.Request) {
 	var task Task
 	if err := json.NewDecoder(r.Body).Decode(&task); err != nil {
@@ -64,6 +74,15 @@ func (h *TaskHandler) HandlerCreateTask(w http.ResponseWriter, r *http.Request) 
 	}
 
 	h.respondWithJSON(w, http.StatusCreated, createdTask)
+}
+
+func (h *TaskHandler) handleGetAllTasks(w http.ResponseWriter, r *http.Request) {
+	tasks, err := h.repo.GetAllTasks()
+	if err != nil {
+		h.respondWithError(w, http.StatusInternalServerError, "Failed to retrieve tasks")
+		return
+	}
+	h.respondWithJSON(w, http.StatusOK, tasks)
 }
 
 func (h *TaskHandler) respondWithError(w http.ResponseWriter, code int, message string) {
