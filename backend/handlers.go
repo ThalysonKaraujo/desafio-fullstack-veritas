@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strings"
 
-	// "errors"
 	"sync"
 	"time"
 
@@ -80,7 +79,7 @@ func (r *InMemoryTaskRepository) CreateTask(task Task) (*Task, error) {
     r.mu.Lock()
     defer r.mu.Unlock()
     task.ID = uuid.New().String() 
-    task.CreatedAt = time.Now().UTC()
+    task.CreatedAt = time.Now().Format("02/01/2006")
     if task.Status == "" {
         task.Status = StatusTodo
     }

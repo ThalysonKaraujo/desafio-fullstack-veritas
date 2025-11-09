@@ -1,7 +1,5 @@
 package main
 
-import "time"
-
 type Status string
 
 const (
@@ -15,7 +13,7 @@ type Task struct {
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Status	  Status    `json:"status"`
-	CreatedAt   time.Time `json:"created_at"`
+	CreatedAt   string `json:"created_at"`
 }
 
 type TaskRepository interface {

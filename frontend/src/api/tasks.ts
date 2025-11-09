@@ -2,6 +2,14 @@ import axios from 'axios';
 
 export type TaskStatus = 'todo' | 'in-progress' | 'done';
 
+export interface ApiTask {
+  id: string;
+  title: string;
+  description?: string;
+  status: TaskStatus;
+  created_at: string;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -22,6 +30,16 @@ export interface TaskUpdatePayload {
   status: TaskStatus;
 }
 
+const mapApiTaskToTask = (t: ApiTask): Task => {
+  return {
+    id: t.id,
+    title: t.title,
+    description: t.description ?? '',
+    status: t.status,
+    createdAt: t.created_at ?? (t as any).createdAt ?? new Date().toISOString(),
+  };
+};
+
 const api = axios.create({
   baseURL: 'http://localhost:8080',
   headers: {
@@ -38,8 +56,9 @@ const getErrorMessage = (err: unknown) => {
 
 export const getTasks = async (): Promise<Task[]> => {
   try {
-    const response = await api.get<Task[]>('/tasks');
-    return response.data;
+    const response = await api.get<Record<string, ApiTask>>('/tasks');
+    const data = response.data;
+    return Object.values(data).map(mapApiTaskToTask);
   } catch (err) {
     throw new Error(`Falha ao buscar tarefas: ${getErrorMessage(err)}`);
   }
@@ -47,8 +66,15 @@ export const getTasks = async (): Promise<Task[]> => {
 
 export const createTask = async (payload: TaskCreatePayload): Promise<Task> => {
   try {
-    const response = await api.post<Task>('/tasks', payload);
-    return response.data;
+    const body = {
+      title: payload.title,
+      description: payload.description ?? '',
+      status: payload.status ?? 'todo',
+    };
+
+    const res = await api.post<ApiTask>('/tasks', body);
+    console.log('createTask response:', res.data);
+    return mapApiTaskToTask(res.data);
   } catch (err) {
     throw new Error(`Falha ao criar tarefa: ${getErrorMessage(err)}`);
   }
