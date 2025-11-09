@@ -1,8 +1,13 @@
+import AddTaskForm from './components/AddTaskForm.js';
+import TasksDebugger from './components/TasksDebugger.js';
+import { KanbanProvider } from './contexts/KanbanContext.js';
+
 function App() {
   return (
-    <div>
-      <h1>Hello World</h1>
-    </div>
+    <KanbanProvider>
+      <AddTaskForm />
+      <TasksDebugger />
+    </KanbanProvider>
   );
 }
 

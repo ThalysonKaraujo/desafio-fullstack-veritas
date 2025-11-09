@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { getTasks } from '../api/tasks.js'; // ajuste o caminho se necessário
+import { getTasks, createTask } from '../api/tasks.js';
 
 export type ColumnId = 'todo' | 'in-progress' | 'done';
 
@@ -24,7 +24,11 @@ interface KanbanContextType {
   columns: KanbanColumns;
   isLoading: boolean;
   error: string | null;
-  // funções futuras aqui
+  addTask: (payload: {
+    title: string;
+    description?: string;
+    status?: ColumnId;
+  }) => Promise<Task>;
 }
 
 export const KanbanContext = createContext<KanbanContextType>({
@@ -35,6 +39,9 @@ export const KanbanContext = createContext<KanbanContextType>({
   },
   isLoading: false,
   error: null,
+  addTask: async () => {
+    throw new Error('addTask not implemented');
+  },
 });
 
 interface KanbanProviderProps {
@@ -89,8 +96,32 @@ export const KanbanProvider: React.FC<KanbanProviderProps> = ({ children }) => {
     fetchTasks();
   }, []);
 
+  const addTask = async (payload: {
+    title: string;
+    description?: string;
+    status?: ColumnId;
+  }): Promise<Task> => {
+    setError(null);
+    try {
+      const status = payload.status ?? 'todo';
+      const created = await createTask({
+        title: payload.title,
+        description: payload.description ?? '',
+        status,
+      });
+      setColumns((prev) => ({
+        ...prev,
+        [status]: { ...prev[status], items: [created, ...prev[status].items] },
+      }));
+      return created;
+    } catch (err) {
+      setError('Erro ao criar tarefa.');
+      throw err;
+    }
+  };
+
   return (
-    <KanbanContext.Provider value={{ columns, isLoading, error }}>
+    <KanbanContext.Provider value={{ columns, isLoading, error, addTask }}>
       {children}
     </KanbanContext.Provider>
   );
