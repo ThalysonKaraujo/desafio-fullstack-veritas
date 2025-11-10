@@ -1,9 +1,9 @@
 import React, { useState, useContext } from 'react';
 import { KanbanContext } from '../contexts/KanbanContext.js';
-import type { ColumnId } from '../contexts/KanbanContext.js';
+import type { ColumnId } from '../api/tasks.js';
 
 const AddTaskForm: React.FC = () => {
-  const { addTask } = useContext(KanbanContext);
+  const { createTask } = useContext(KanbanContext);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<ColumnId>('todo');
@@ -16,7 +16,7 @@ const AddTaskForm: React.FC = () => {
     setError(null);
     setLoading(true);
     try {
-      await addTask({
+      await createTask({
         title: title.trim(),
         description: description.trim(),
         status,

@@ -80,7 +80,6 @@ const getErrorMessage = (err: unknown) => {
   return String(err);
 };
 
-/* GET /tasks -> retorna array de Task */
 export const getTasks = async (): Promise<Task[]> => {
   try {
     const response = await api.get<Record<string, ApiTask>>('/tasks');
