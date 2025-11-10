@@ -1,4 +1,3 @@
-// frontend/src/components/Board.tsx
 import React, { useContext } from 'react';
 import {
   Wrapper,

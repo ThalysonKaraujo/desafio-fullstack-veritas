@@ -78,7 +78,6 @@ func (r *InMemoryTaskRepository) CreateTask(task Task) (*Task, error) {
 	defer r.mu.Unlock()
 
 	task.ID = uuid.New().String()
-	// armazena timestamp completo em RFC3339 (ex: 2025-11-10T13:51:45Z)
 	task.CreatedAt = time.Now().UTC().Format(time.RFC3339)
 
 	if task.Status == "" {
@@ -124,7 +123,6 @@ func (r *InMemoryTaskRepository) UpdateTask(id string, updatedTask Task) (*Task,
 		return &Task{}, errors.New("invalid task status")
 	}
 	updatedTask.ID = id
-	// preserva CreatedAt tal como estava (já em RFC3339 ou outro formato)
 	updatedTask.CreatedAt = existingTask.CreatedAt
 	r.tasks[id] = updatedTask
 	if err := r.saveToJSON(); err != nil {
