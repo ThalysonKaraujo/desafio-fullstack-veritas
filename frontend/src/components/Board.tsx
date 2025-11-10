@@ -1,3 +1,4 @@
+// frontend/src/components/Board.tsx
 import React, { useContext } from 'react';
 import {
   Wrapper,
@@ -10,6 +11,33 @@ import {
   Empty,
 } from './Board.style.js';
 import { KanbanContext } from '../contexts/KanbanContext.js';
+
+const formatDateOnly = (value?: string | null): string => {
+  const v = value ?? '';
+  if (!v) return '';
+
+  const d = new Date(v);
+  if (!isNaN(d.getTime())) return d.toLocaleDateString('pt-BR');
+
+  const tIndex = v.indexOf('T');
+  if (tIndex !== -1) {
+    const datePart = v.substring(0, tIndex);
+    const d2 = new Date(datePart);
+    if (!isNaN(d2.getTime())) return d2.toLocaleDateString('pt-BR');
+  }
+
+  const ddmmyyyy = /^\d{2}\/\d{2}\/\d{4}$/;
+  if (ddmmyyyy.test(v)) return v;
+
+  const isoDateOnly = /^\d{4}-\d{2}-\d{2}$/;
+  if (isoDateOnly.test(v)) {
+    const d3 = new Date(v);
+    if (!isNaN(d3.getTime())) return d3.toLocaleDateString('pt-BR');
+  }
+
+  const maybeDate = v.split('T')[0] || v;
+  return maybeDate;
+};
 
 const borderColorForStatus = (status: string) => {
   switch (status) {
@@ -71,7 +99,7 @@ const Board: React.FC = () => {
                     <div className="desc">{task.description}</div>
                   )}
                   <div className="meta">
-                    <span>{task.createdAt}</span>
+                    <span>{formatDateOnly(task.createdAt)}</span>
                     <strong style={{ color: '#3b82f6' }}>A Fazer</strong>
                   </div>
                 </Card>
@@ -101,7 +129,7 @@ const Board: React.FC = () => {
                     <div className="desc">{task.description}</div>
                   )}
                   <div className="meta">
-                    <span>{new Date(task.createdAt).toLocaleString()}</span>
+                    <span>{formatDateOnly(task.createdAt)}</span>
                     <strong style={{ color: '#f59e0b' }}>Em Progresso</strong>
                   </div>
                 </Card>
@@ -127,7 +155,7 @@ const Board: React.FC = () => {
                     <div className="desc">{task.description}</div>
                   )}
                   <div className="meta">
-                    <span>{new Date(task.createdAt).toLocaleString()}</span>
+                    <span>{formatDateOnly(task.createdAt)}</span>
                     <strong style={{ color: '#10b981' }}>Concluído</strong>
                   </div>
                 </Card>
