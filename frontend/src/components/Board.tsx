@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import {
   Wrapper,
   Container,
@@ -6,37 +6,12 @@ import {
   BoardGrid,
   Column,
   TasksList,
-  Card,
   Empty,
 } from './Board.style.js';
 import { KanbanContext } from '../contexts/KanbanContext.js';
-
-const formatDateOnly = (value?: string | null): string => {
-  const v = value ?? '';
-  if (!v) return '';
-
-  const d = new Date(v);
-  if (!isNaN(d.getTime())) return d.toLocaleDateString('pt-BR');
-
-  const tIndex = v.indexOf('T');
-  if (tIndex !== -1) {
-    const datePart = v.substring(0, tIndex);
-    const d2 = new Date(datePart);
-    if (!isNaN(d2.getTime())) return d2.toLocaleDateString('pt-BR');
-  }
-
-  const ddmmyyyy = /^\d{2}\/\d{2}\/\d{4}$/;
-  if (ddmmyyyy.test(v)) return v;
-
-  const isoDateOnly = /^\d{4}-\d{2}-\d{2}$/;
-  if (isoDateOnly.test(v)) {
-    const d3 = new Date(v);
-    if (!isNaN(d3.getTime())) return d3.toLocaleDateString('pt-BR');
-  }
-
-  const maybeDate = v.split('T')[0] || v;
-  return maybeDate;
-};
+import type { Task } from '../api/tasks.js';
+import TaskCard from './TaskCard.js';
+import TaskDetailModal from './TaskDetailModal.js';
 
 const borderColorForStatus = (status: string) => {
   switch (status) {
@@ -53,6 +28,18 @@ const borderColorForStatus = (status: string) => {
 
 const Board: React.FC = () => {
   const { columns, isLoading, error } = useContext(KanbanContext);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openTask = (task: Task) => {
+    setSelectedTask(task);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedTask(null);
+  };
 
   if (isLoading) {
     return (
@@ -89,19 +76,11 @@ const Board: React.FC = () => {
             <TasksList>
               {columns.todo.items.length === 0 && <Empty>Nenhuma tarefa</Empty>}
               {columns.todo.items.map((task) => (
-                <Card
+                <TaskCard
                   key={task.id}
-                  style={{ borderLeftColor: borderColorForStatus(task.status) }}
-                >
-                  <div className="title">{task.title}</div>
-                  {task.description && (
-                    <div className="desc">{task.description}</div>
-                  )}
-                  <div className="meta">
-                    <span>{formatDateOnly(task.createdAt)}</span>
-                    <strong style={{ color: '#3b82f6' }}>A Fazer</strong>
-                  </div>
-                </Card>
+                  task={task}
+                  onClick={() => openTask(task)}
+                />
               ))}
             </TasksList>
           </Column>
@@ -119,19 +98,11 @@ const Board: React.FC = () => {
                 <Empty>Nenhuma tarefa</Empty>
               )}
               {columns['in-progress'].items.map((task) => (
-                <Card
+                <TaskCard
                   key={task.id}
-                  style={{ borderLeftColor: borderColorForStatus(task.status) }}
-                >
-                  <div className="title">{task.title}</div>
-                  {task.description && (
-                    <div className="desc">{task.description}</div>
-                  )}
-                  <div className="meta">
-                    <span>{formatDateOnly(task.createdAt)}</span>
-                    <strong style={{ color: '#f59e0b' }}>Em Progresso</strong>
-                  </div>
-                </Card>
+                  task={task}
+                  onClick={() => openTask(task)}
+                />
               ))}
             </TasksList>
           </Column>
@@ -145,23 +116,23 @@ const Board: React.FC = () => {
             <TasksList>
               {columns.done.items.length === 0 && <Empty>Nenhuma tarefa</Empty>}
               {columns.done.items.map((task) => (
-                <Card
+                <TaskCard
                   key={task.id}
-                  style={{ borderLeftColor: borderColorForStatus(task.status) }}
-                >
-                  <div className="title">{task.title}</div>
-                  {task.description && (
-                    <div className="desc">{task.description}</div>
-                  )}
-                  <div className="meta">
-                    <span>{formatDateOnly(task.createdAt)}</span>
-                    <strong style={{ color: '#10b981' }}>Concluído</strong>
-                  </div>
-                </Card>
+                  task={task}
+                  onClick={() => openTask(task)}
+                />
               ))}
             </TasksList>
           </Column>
         </BoardGrid>
+
+        {selectedTask && (
+          <TaskDetailModal
+            isOpen={isModalOpen}
+            onClose={closeModal}
+            task={selectedTask}
+          />
+        )}
       </Container>
     </Wrapper>
   );

@@ -148,7 +148,6 @@ func (r *InMemoryTaskRepository) DeleteTask(id string) error {
 	return nil
 }
 
-/* ===== Handlers ===== */
 
 func (h *TaskHandler) HandlerCreateTask(w http.ResponseWriter, r *http.Request) {
 	var task Task

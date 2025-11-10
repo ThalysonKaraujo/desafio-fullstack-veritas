@@ -18,7 +18,7 @@ interface Props {
 }
 
 export default function CreateTaskModal({ isOpen, onClose }: Props) {
-  const { addTask } = useContext(KanbanContext);
+  const { createTask } = useContext(KanbanContext);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState<TaskStatus>('todo');
@@ -38,7 +38,7 @@ export default function CreateTaskModal({ isOpen, onClose }: Props) {
 
     setIsLoading(true);
     try {
-      await addTask({
+      await createTask({
         title: title.trim(),
         description: description.trim(),
         status,
@@ -47,7 +47,7 @@ export default function CreateTaskModal({ isOpen, onClose }: Props) {
       setDescription('');
       setStatus('todo');
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       setError('Erro ao criar a tarefa. Tente novamente.');
       console.error(err);
     } finally {

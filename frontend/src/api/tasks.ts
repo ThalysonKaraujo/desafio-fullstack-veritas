@@ -1,42 +1,68 @@
 import axios from 'axios';
 
-export type TaskStatus = 'todo' | 'in-progress' | 'done';
+export type ColumnId = 'todo' | 'in-progress' | 'done';
 
 export interface ApiTask {
   id: string;
   title: string;
-  description?: string;
-  status: TaskStatus;
+  description?: string | null;
+  status: string;
   created_at: string;
 }
 
 export interface Task {
   id: string;
   title: string;
-  description?: string;
-  status: TaskStatus;
+  description?: string | null;
+  status: ColumnId;
   createdAt: string;
 }
 
 export interface TaskCreatePayload {
   title: string;
   description?: string;
-  status?: TaskStatus;
+  status?: ColumnId;
 }
 
 export interface TaskUpdatePayload {
   title: string;
-  description?: string;
-  status: TaskStatus;
+  description?: string | null;
+  status: ColumnId;
 }
+
+const apiStatusToColumnId = (s: string): ColumnId => {
+  switch (s) {
+    case 'A Fazer':
+      return 'todo';
+    case 'Em Progresso':
+      return 'in-progress';
+    case 'Concluído':
+      return 'done';
+    default:
+      return 'todo';
+  }
+};
+
+const columnIdToApiStatus = (c: ColumnId): string => {
+  switch (c) {
+    case 'todo':
+      return 'A Fazer';
+    case 'in-progress':
+      return 'Em Progresso';
+    case 'done':
+      return 'Concluído';
+    default:
+      return 'A Fazer';
+  }
+};
 
 const mapApiTaskToTask = (t: ApiTask): Task => {
   return {
     id: t.id,
     title: t.title,
-    description: t.description ?? '',
-    status: t.status,
-    createdAt: t.created_at ?? (t as any).createdAt ?? new Date().toISOString(),
+    description: t.description ?? null,
+    status: apiStatusToColumnId(t.status),
+    createdAt: t.created_at ?? new Date().toISOString(),
   };
 };
 
@@ -49,11 +75,12 @@ const api = axios.create({
 
 const getErrorMessage = (err: unknown) => {
   if (axios.isAxiosError(err)) {
-    return err.response?.data?.error ?? err.message;
+    return (err.response as any)?.data?.error ?? err.message;
   }
   return String(err);
 };
 
+/* GET /tasks -> retorna array de Task */
 export const getTasks = async (): Promise<Task[]> => {
   try {
     const response = await api.get<Record<string, ApiTask>>('/tasks');
@@ -69,11 +96,10 @@ export const createTask = async (payload: TaskCreatePayload): Promise<Task> => {
     const body = {
       title: payload.title,
       description: payload.description ?? '',
-      status: payload.status ?? 'todo',
+      status: columnIdToApiStatus(payload.status ?? 'todo'),
     };
 
     const res = await api.post<ApiTask>('/tasks', body);
-    console.log('createTask response:', res.data);
     return mapApiTaskToTask(res.data);
   } catch (err) {
     throw new Error(`Falha ao criar tarefa: ${getErrorMessage(err)}`);
@@ -85,8 +111,14 @@ export const updateTask = async (
   payload: TaskUpdatePayload
 ): Promise<Task> => {
   try {
-    const response = await api.put<Task>(`/tasks/${id}`, payload);
-    return response.data;
+    const bodyForApi = {
+      title: payload.title,
+      description: payload.description ?? '',
+      status: columnIdToApiStatus(payload.status),
+    };
+
+    const response = await api.put<ApiTask>(`/tasks/${id}`, bodyForApi);
+    return mapApiTaskToTask(response.data);
   } catch (err) {
     throw new Error(`Falha ao atualizar tarefa: ${getErrorMessage(err)}`);
   }
