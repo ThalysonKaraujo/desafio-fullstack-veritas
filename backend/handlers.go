@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"strings"
 
-	// "errors"
 	"sync"
 	"time"
 
@@ -20,7 +19,7 @@ import (
 const jsonStoreFile = "task.json"
 
 type InMemoryTaskRepository struct {
-	tasks map[string]Task 
+	tasks map[string]Task
 	mu    sync.RWMutex
 }
 
@@ -54,7 +53,7 @@ func (r *InMemoryTaskRepository) loadFromJSON() error {
 		return err
 	}
 	defer file.Close()
-	
+
 	decoder := json.NewDecoder(file)
 	if err := decoder.Decode(&r.tasks); err != nil {
 		return err
@@ -63,34 +62,34 @@ func (r *InMemoryTaskRepository) loadFromJSON() error {
 }
 
 func (r *InMemoryTaskRepository) saveToJSON() error {
-
 	file, err := os.Create(jsonStoreFile)
 	if err != nil {
-		return err	
+		return err
 	}
 	defer file.Close()
-	
+
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", " ")
 	return encoder.Encode(r.tasks)
 }
 
-
 func (r *InMemoryTaskRepository) CreateTask(task Task) (*Task, error) {
-    r.mu.Lock()
-    defer r.mu.Unlock()
-    task.ID = uuid.New().String() 
-    task.CreatedAt = time.Now().UTC()
-    if task.Status == "" {
-        task.Status = StatusTodo
-    }
-    r.tasks[task.ID] = task
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	task.ID = uuid.New().String()
+	task.CreatedAt = time.Now().UTC().Format(time.RFC3339)
+
+	if task.Status == "" {
+		task.Status = StatusTodo
+	}
+	r.tasks[task.ID] = task
 
 	if err := r.saveToJSON(); err != nil {
-		log.Printf("Error saving in JSON")
+		log.Printf("Error saving in JSON: %v", err)
 	}
-    
-    return &task, nil 
+
+	return &task, nil
 }
 
 func (r *InMemoryTaskRepository) GetAllTasks() ([]Task, error) {
@@ -127,7 +126,7 @@ func (r *InMemoryTaskRepository) UpdateTask(id string, updatedTask Task) (*Task,
 	updatedTask.CreatedAt = existingTask.CreatedAt
 	r.tasks[id] = updatedTask
 	if err := r.saveToJSON(); err != nil {
-		log.Printf("Error saving in JSON")
+		log.Printf("Error saving in JSON: %v", err)
 	}
 
 	return &updatedTask, nil
@@ -144,10 +143,11 @@ func (r *InMemoryTaskRepository) DeleteTask(id string) error {
 	delete(r.tasks, id)
 
 	if err := r.saveToJSON(); err != nil {
-		log.Printf("Error saving in JSON")
+		log.Printf("Error saving in JSON: %v", err)
 	}
 	return nil
 }
+
 
 func (h *TaskHandler) HandlerCreateTask(w http.ResponseWriter, r *http.Request) {
 	var task Task
@@ -160,7 +160,7 @@ func (h *TaskHandler) HandlerCreateTask(w http.ResponseWriter, r *http.Request) 
 		h.respondWithError(w, http.StatusBadRequest, "title is required")
 		return
 	}
-	
+
 	createdTask, err := h.repo.CreateTask(task)
 	if err != nil {
 		h.respondWithError(w, http.StatusInternalServerError, "failed to create task")
@@ -196,7 +196,6 @@ func (h *TaskHandler) handleUpdateTask(w http.ResponseWriter, r *http.Request) {
 		h.respondWithError(w, http.StatusBadRequest, "invalid payload json")
 		return
 	}
-	
 
 	if taskToUpdate.Title == "" {
 		h.respondWithError(w, http.StatusBadRequest, "title is required")
@@ -243,7 +242,7 @@ func (h *TaskHandler) respondWithError(w http.ResponseWriter, code int, message 
 	h.respondWithJSON(w, code, map[string]string{"error": message})
 }
 
-func (h *TaskHandler) respondWithJSON(w http.ResponseWriter, statusCode int, payload interface{}){
+func (h *TaskHandler) respondWithJSON(w http.ResponseWriter, statusCode int, payload interface{}) {
 	response, _ := json.Marshal(payload)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)

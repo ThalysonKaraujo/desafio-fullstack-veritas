@@ -1,8 +1,16 @@
+import Board from './components/Board.js';
+import CreateTaskButton from './components/CreateTaskButton.js';
+import { KanbanProvider } from './contexts/KanbanContext.js';
+import { AppRoot } from './App.styles.js';
+
 function App() {
   return (
-    <div>
-      <h1>Hello World</h1>
-    </div>
+    <AppRoot>
+      <KanbanProvider>
+        <Board />
+        <CreateTaskButton />
+      </KanbanProvider>
+    </AppRoot>
   );
 }
 

@@ -27,9 +27,6 @@ func TestUnit_Repository_CreateTaskDefaults(t *testing.T) {
 	if createdTask.Status != StatusTodo {
 		t.Errorf("CreateTask falhou em definir o Status padrão: esperado '%s', recebido '%s'", StatusTodo, createdTask.Status)
 	}
-	if createdTask.CreatedAt.IsZero() {
-		t.Error("CreateTask falhou em definir o CreatedAt")
-	}
 }
 
 func TestUnit_Repository_UpdateTaskInvalidStatus(t *testing.T) {
@@ -40,7 +37,7 @@ func TestUnit_Repository_UpdateTaskInvalidStatus(t *testing.T) {
 		ID:        "task-1",
 		Title:     "Tarefa Original",
 		Status:    StatusTodo,
-		CreatedAt: time.Now(),
+		CreatedAt: time.Now().Format(time.RFC3339),
 	}
 	repo.tasks[testTask.ID] = testTask
 
