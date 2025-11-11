@@ -116,9 +116,7 @@ export default function Board(): React.ReactElement {
     setActiveId(String(event.active.id));
   };
 
-  const handleDragOver = (_event: DragOverEvent) => {
-    // Apenas atualiza visualmente, não move realmente
-  };
+  const handleDragOver = (_event: DragOverEvent) => {};
 
   const handleDragCancel = () => {
     setActiveId(null);
@@ -153,8 +151,6 @@ export default function Board(): React.ReactElement {
 
     if (activeInfo.colId === destColId && activeInfo.index === destIndex)
       return;
-
-    // Mesma coluna - apenas reordenação
     if (activeInfo.colId === destColId) {
       const colId = activeInfo.colId;
       const newItems = arrayMove(
@@ -169,7 +165,6 @@ export default function Board(): React.ReactElement {
       return;
     }
 
-    // Coluna diferente - move para outra coluna
     if (activeInfo.colId && destColId) {
       const sourceCol = activeInfo.colId;
       const targetCol = destColId;
@@ -187,7 +182,6 @@ export default function Board(): React.ReactElement {
         [targetCol]: { ...prev[targetCol], items: targetItems },
       }));
 
-      // Persiste a mudança no backend
       try {
         if (moved) {
           await updateTask(moved.id, { status: targetCol as ColumnId });
@@ -203,7 +197,6 @@ export default function Board(): React.ReactElement {
     }
   };
 
-  // Encontra a tarefa ativa para exibir no overlay
   const getActiveTask = () => {
     if (!activeId) return null;
     for (const key of COLUMN_KEYS) {
@@ -270,7 +263,6 @@ export default function Board(): React.ReactElement {
             })}
           </S.BoardGrid>
 
-          {/* Overlay que segue o cursor enquanto arrasta */}
           <DragOverlay>
             {activeTask ? (
               <div style={{ opacity: 0.9, transform: 'scale(1.05)' }}>
@@ -279,8 +271,6 @@ export default function Board(): React.ReactElement {
             ) : null}
           </DragOverlay>
         </DndContext>
-
-        {/* Modal de detalhe da tarefa */}
         {selectedTask && (
           <TaskDetailModal
             isOpen={isDetailModalOpen}

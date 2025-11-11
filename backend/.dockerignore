@@ -1,0 +1,7 @@
+*.exe
+*.out
+*.test
+task.json
+.git
+node_modules
+bin
