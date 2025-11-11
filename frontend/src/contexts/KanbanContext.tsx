@@ -1,3 +1,4 @@
+// src/contexts/KanbanContext.tsx
 import React, { createContext, useState, useEffect } from 'react';
 import {
   getTasks as apiGetTasks,
@@ -9,6 +10,7 @@ import type {
   Task,
   TaskCreatePayload,
   TaskUpdatePayload,
+  ColumnId,
 } from '../api/tasks.js';
 
 interface KanbanColumns {
@@ -17,10 +19,12 @@ interface KanbanColumns {
   done: { name: string; items: Task[] };
 }
 
-interface KanbanContextType {
+export interface KanbanContextType {
   columns: KanbanColumns;
+  setColumns: React.Dispatch<React.SetStateAction<KanbanColumns>>;
   isLoading: boolean;
   error: string | null;
+  loadTasks: () => Promise<void>;
   createTask: (payload: TaskCreatePayload) => Promise<Task>;
   updateTask: (id: string, update: Partial<TaskUpdatePayload>) => Promise<Task>;
   deleteTask: (id: string) => Promise<void>;
@@ -32,8 +36,10 @@ export const KanbanContext = createContext<KanbanContextType>({
     'in-progress': { name: 'Em Progresso', items: [] },
     done: { name: 'Concluído', items: [] },
   },
+  setColumns: () => {},
   isLoading: false,
   error: null,
+  loadTasks: async () => {},
   createTask: async () => {
     throw new Error('createTask not implemented');
   },
@@ -55,15 +61,6 @@ export const KanbanProvider: React.FC<{ children: React.ReactNode }> = ({
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const findTaskById = (id: string): Task | null => {
-    const allTasks = [
-      ...columns.todo.items,
-      ...columns['in-progress'].items,
-      ...columns.done.items,
-    ];
-    return allTasks.find((t) => t.id === id) ?? null;
-  };
 
   const loadTasks = async () => {
     setIsLoading(true);
@@ -117,10 +114,14 @@ export const KanbanProvider: React.FC<{ children: React.ReactNode }> = ({
   ): Promise<Task> => {
     setError(null);
     try {
-      const current = findTaskById(id);
-      if (!current) {
-        throw new Error('Tarefa não encontrada no estado local.');
-      }
+      // find current task
+      const all = [
+        ...columns.todo.items,
+        ...columns['in-progress'].items,
+        ...columns.done.items,
+      ];
+      const current = all.find((t) => t.id === id);
+      if (!current) throw new Error('Tarefa não encontrada no estado local.');
 
       const payloadToSend: TaskUpdatePayload = {
         title: update.title ?? current.title,
@@ -130,14 +131,11 @@ export const KanbanProvider: React.FC<{ children: React.ReactNode }> = ({
         status: update.status ?? current.status,
       };
 
-      console.log('updateTask -> sending payload (PUT):', id, payloadToSend);
-
       const updated = await apiUpdateTask(id, payloadToSend);
 
-      console.log('updateTask -> api returned:', updated);
-
+      // update local columns: remove old and insert updated into target column
       setColumns((prev) => {
-        const newColumns: KanbanColumns = {
+        const cleared = {
           todo: {
             ...prev.todo,
             items: prev.todo.items.filter((t) => t.id !== id),
@@ -152,19 +150,18 @@ export const KanbanProvider: React.FC<{ children: React.ReactNode }> = ({
           },
         };
 
-        if (['todo', 'in-progress', 'done'].includes(updated.status)) {
-          newColumns[updated.status].items = [
-            updated,
-            ...newColumns[updated.status].items,
-          ];
-        }
-
-        return newColumns;
+        const target = updated.status as keyof KanbanColumns;
+        return {
+          ...cleared,
+          [target]: {
+            ...cleared[target],
+            items: [updated, ...cleared[target].items],
+          },
+        };
       });
 
       return updated;
     } catch (err: any) {
-      console.error('Erro updateTask:', err);
       setError(err.message || 'Erro ao atualizar tarefa.');
       throw err;
     }
@@ -201,8 +198,10 @@ export const KanbanProvider: React.FC<{ children: React.ReactNode }> = ({
     <KanbanContext.Provider
       value={{
         columns,
+        setColumns,
         isLoading,
         error,
+        loadTasks,
         createTask,
         updateTask,
         deleteTask,
