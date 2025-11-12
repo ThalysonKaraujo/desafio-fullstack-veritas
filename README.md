@@ -13,8 +13,7 @@ Um aplicativo full-stack moderno para gerenciar tarefas em estilo Kanban (arrast
 
 ### Pré-requisitos
 
-- **Docker** e **Docker Compose** instalados (recomendado para produção)
-- Ou: **Node.js 20+** + **Go 1.25+** (para desenvolvimento local)
+- **Docker** e **Docker Compose** instalados 
 
 ### Opção 1: Com Docker Compose (Recomendado)
 
