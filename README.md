@@ -2,7 +2,6 @@
 
 Um aplicativo full-stack moderno para gerenciar tarefas em estilo Kanban (arrastar e soltar entre colunas). Construído com **React 19 + TypeScript** no frontend e **Go** no backend, containerizado com **Docker** e pronto para produção.
 
-![Status](https://img.shields.io/badge/Status-Working-green)
 ![Frontend](https://img.shields.io/badge/Frontend-React%2019%20%2B%20Vite-blue)
 ![Backend](https://img.shields.io/badge/Backend-Go%201.25-cyan)
 ![Docker](https://img.shields.io/badge/Docker-Compose-important)
