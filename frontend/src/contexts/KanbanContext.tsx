@@ -1,4 +1,3 @@
-// src/contexts/KanbanContext.tsx
 import React, { createContext, useState, useEffect } from 'react';
 import {
   getTasks as apiGetTasks,
@@ -114,7 +113,6 @@ export const KanbanProvider: React.FC<{ children: React.ReactNode }> = ({
   ): Promise<Task> => {
     setError(null);
     try {
-      // find current task
       const all = [
         ...columns.todo.items,
         ...columns['in-progress'].items,
@@ -133,7 +131,6 @@ export const KanbanProvider: React.FC<{ children: React.ReactNode }> = ({
 
       const updated = await apiUpdateTask(id, payloadToSend);
 
-      // update local columns: remove old and insert updated into target column
       setColumns((prev) => {
         const cleared = {
           todo: {
