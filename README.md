@@ -1,6 +1,6 @@
 # 📋 Desafio Full Stack Veritas — Quadro Kanban
 
-Um aplicativo full-stack moderno para gerenciar tarefas em estilo Kanban (arrastar e soltar entre colunas). Construído com **React 19 + TypeScript** no frontend e **Go** no backend, containerizado com **Docker** e pronto para produção.
+Um aplicativo full-stack moderno para gerenciar tarefas em estilo Kanban (arrastar e soltar entre colunas). Construído com **React 19 + TypeScript** no frontend e **Go** no backend, containerizado com **Docker**.
 
 ![Frontend](https://img.shields.io/badge/Frontend-React%2019%20%2B%20Vite-blue)
 ![Backend](https://img.shields.io/badge/Backend-Go%201.25-cyan)
@@ -68,26 +68,31 @@ desafio-fullstack-veritas/
 │   └── go.sum               # Lock de versões
 │
 ├── frontend/                # Aplicação React
-│   ├── Dockerfile           # Build (Node → Nginx)
+│   ├── Dockerfile           # Build (Node 20 → Nginx)
 │   ├── .dockerignore        # Otimizações de build
 │   ├── nginx.conf           # Configuração de servidor web
-│   ├── src/
-│   │   ├── App.tsx          # Componente raiz
-│   │   ├── main.tsx         # React DOM render
-│   │   ├── api/
-│   │   │   └── tasks.ts     # Client HTTP (Axios)
-│   │   ├── components/      # Componentes React
-│   │   │   ├── Board.tsx    # Kanban board com DnD
-│   │   │   ├── TaskCard.tsx # Card de tarefa
-│   │   │   ├── TaskDetailModal.tsx  # Modal de edição
-│   │   │   └── ...
-│   │   ├── contexts/
-│   │   │   └── KanbanContext.tsx    # Global state (React Context)
-│   │   └── index.css        # Estilos globais
-│   ├── package.json         # Dependencies
-│   └── tsconfig.json        # TypeScript config
+│   ├── package.json         # Dependências / scripts (vite)
+│   ├── tsconfig.json        # TypeScript config
+│   ├── public/              # Assets estáticos (se houver)
+│   └── src/
+│       ├── main.tsx         # React entry
+│       ├── App.tsx          # Componente raiz
+│       ├── index.css        # Estilos globais
+│       ├── api/
+│       │   └── tasks.ts     # Client HTTP (Axios)
+│       ├── components/      # Componentes React
+│       │   ├── Board.tsx
+│       │   ├── TaskCard.tsx
+│       │   ├── TaskDetailModal.tsx
+│       │   └── ...
+│       └── contexts/
+│           └── KanbanContext.tsx  # Estado global (React Context)
 │
-├── docker-compose.yml       # Orquestração de containers
+├── docs/                    # Documentação e diagramas
+│   ├── user-flow.png        # User Flow (diagrama)
+│   └── data-flow.png        # Data Flow (diagrama)
+│
+├── docker-compose.yml       # Orquestração de containers (frontend + backend)
 └── .gitignore               # Arquivos ignorados no git
 ```
 
@@ -372,14 +377,6 @@ docker compose build --no-cache
 
 # Inspect
 docker images | grep desafio
-
-# Tag para registry (ex: Docker Hub)
-docker tag desafio-fullstack-veritas-backend:latest myusername/kanban-backend:v1.0
-docker tag desafio-fullstack-veritas-frontend:latest myusername/kanban-frontend:v1.0
-
-# Push
-docker push myusername/kanban-backend:v1.0
-docker push myusername/kanban-frontend:v1.0
 ```
 
 ---
