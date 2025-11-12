@@ -5,9 +5,6 @@ import (
 	"time"
 )
 
-func TestUnit_isStatusValid(t *testing.T) {
-	// ... (seu teste existente)
-}
 func TestUnit_Repository_CreateTaskDefaults(t *testing.T) {
 	repo := NewInMemoryTaskRepository()
 	repo.tasks = make(map[string]Task) 
